@@ -12,8 +12,8 @@ namespace PixCapWin.Core;
 ///
 /// This is the same C ABI the macOS app calls through Swift, so background
 /// presets, file naming, the history database, and syntax highlighting behave
-/// identically on both platforms — that shared behaviour is the whole point of
-/// ADR-001's architecture.
+/// identically on both platforms. Sharing the core rather than the UI is what
+/// lets each shell stay native while the behaviour stays consistent.
 /// </summary>
 internal static class NativeMethods
 {

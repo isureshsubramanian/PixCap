@@ -54,7 +54,7 @@ pub enum IpcMessageResponse {
 
 /// Endpoint used when none is configured.
 ///
-/// ADR-001 §5.4 calls for a Unix domain socket on macOS and a named pipe on
+/// The transport is a Unix domain socket on macOS and a named pipe on
 /// Windows. `interprocess` provides both behind one API: filesystem-path names
 /// map to Unix sockets, namespaced names map to `\\.\pipe\…` on Windows.
 pub const DEFAULT_SOCKET_PATH: &str = "/tmp/pixcap.sock";

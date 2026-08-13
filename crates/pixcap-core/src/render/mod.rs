@@ -1,9 +1,13 @@
 //! Raster beautification renderer.
 //!
-//! This is the shared implementation ADR-001 §4.5 assumed: one renderer, used
-//! by the macOS shell, the Windows shell, and the CLI. Before it existed the
-//! renderer was Swift-only, so Windows could capture but never beautify, and
-//! the CLI could only emit SVG for code snippets.
+//! Used by the Windows shell and the CLI. Before it existed the renderer was
+//! Swift-only, so Windows could capture but never beautify, and the CLI could
+//! only emit SVG for code snippets.
+//!
+//! macOS deliberately does *not* call this code — it renders through Core
+//! Graphics instead, so each app draws with the framework native to its
+//! platform. The two are kept in step by the shared `AnnotationDocument`
+//! schema rather than by shared drawing code.
 //!
 //! Rendering is done with `tiny-skia` — a pure-Rust rasterizer — so the crate
 //! keeps cross-compiling without a C toolchain for graphics.

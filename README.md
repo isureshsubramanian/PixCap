@@ -1,41 +1,68 @@
-# PixCap - High-Performance Cross-Platform Screen Snapshot & Code Beautifier
+# PixCap
 
-PixCap is a next-generation screen snapshot and code snippet engine designed natively for **macOS (Apple Silicon ARM64)** and **Windows 11 (x64 / ARM64)**.
+Capture, annotate, and beautify screenshots on macOS and Windows.
 
----
-
-## 🏗️ Architecture Overview (Option B)
-
-PixCap uses a modular hybrid architecture:
-- **Rust Core Workspace (`crates/`):**
-  - `pixcap-core`: 2D Skia canvas layout, mesh gradient theme engine, Syntect/Tree-Sitter syntax parser, transparent PNG/SVG export, smart data redaction.
-  - `pixcap-ipc`: Local IPC server (Unix Domain Sockets on macOS, Named Pipes on Windows 11).
-  - `pixcap-ffi`: C-ABI shared library bindings for Swift (macOS) and C++ (Windows 11).
-- **Native OS Capture Apps (`platforms/`):**
-  - macOS: Swift / AppKit / ScreenCaptureKit native M3 Apple Silicon app shell.
-  - Windows 11: C++/WinRT / WinUI 3 `Windows.Graphics.Capture` engine.
-- **IDE Extensions (`extensions/`):**
-  - `extensions/vscode`: VS Code Extension (TypeScript).
-  - `extensions/jetbrains`: JetBrains Plugin (Kotlin).
+Two native apps sit on one shared Rust core. Nothing leaves the machine —
+there is no account, no telemetry, and no server to upload to.
 
 ---
 
-## 🚀 Quick Start (Development)
+## Layout
 
-### Prerequisites
-- **macOS:** Xcode Command Line Tools, Swift 6+, Rust 1.85+, Node.js v20+
-- **Windows 11:** Visual Studio 2022 (C++ / WinRT), Rust 1.85+
-
-### Build & Run Tests
-```bash
-# Build Rust Workspace Core
-cargo build --workspace
-
-# Run Unit Tests
-cargo test --workspace
+```
+crates/
+  pixcap-core     rendering, scroll stitching, redaction, OCR index, history
+  pixcap-ffi      C ABI, consumed by Swift on macOS and C# on Windows
+  pixcap-ipc      local transport — Unix socket on macOS, named pipe on Windows
+  pixcap-cli      headless rendering
+platforms/
+  macos           Swift + SwiftUI/AppKit, ScreenCaptureKit, Core Graphics
+  windows         C# on .NET 8, WinUI 3, Windows.Graphics.Capture
+extensions/
+  vscode          VS Code extension (TypeScript)
+  jetbrains       JetBrains plugin (Kotlin)
+website/          landing page for pixcap.app
 ```
 
----
+## Two renderers, on purpose
 
-## 📄 Architectural Decision Record
-Read the full decision analysis in [`ADR-001.md`](./ADR-001.md) or [`docs/ADR-001.md`](./docs/ADR-001.md).
+macOS draws through Core Graphics; Windows and the CLI draw through the
+`tiny-skia` renderer in `pixcap-core`. That is a deliberate choice rather than
+duplicated effort — each app renders with the framework native to its platform,
+so each one feels like it belongs there.
+
+What keeps them in agreement is the shared `AnnotationDocument` schema in
+`pixcap-core`. Both renderers read the same field definitions, so the same
+document produces the same layout. The contract lives in the data, not in
+shared drawing code.
+
+Everything else is shared outright: background presets, file naming, the
+history database, syntax highlighting, and redaction all run in Rust and are
+called over the same C ABI from both platforms.
+
+## Building
+
+Prerequisites: Rust 1.85+. Then Xcode Command Line Tools and Swift 6+ for
+macOS, or Visual Studio 2022 with the Windows App SDK for Windows.
+
+```bash
+cargo build --workspace
+cargo test --workspace     # 48 tests
+```
+
+Platform apps:
+
+```bash
+# macOS — produces PixCap.app
+./platforms/macos/PixCapMac/scripts/make-app.sh
+
+# Windows — add -Installer for setup.exe
+./platforms/windows/build.ps1
+```
+
+`platforms/windows/README.md` covers the Windows build in more detail,
+including what is and is not implemented there yet.
+
+## Licence
+
+Apache License 2.0 — see [LICENSE](./LICENSE).

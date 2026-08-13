@@ -3,9 +3,9 @@ import Cocoa
 
 /// PixCap Settings.
 ///
-/// Follows the macOS System Settings pattern set out in ADR-001 §4.2: a
-/// sidebar of tinted glyph tiles, inset grouped cards in the detail pane, a
-/// search field that filters individual settings, and one typography scale.
+/// Follows the macOS System Settings pattern: a sidebar of tinted glyph tiles,
+/// inset grouped cards in the detail pane, a search field that filters
+/// individual settings, and one typography scale.
 @available(macOS 14.0, *)
 public struct PreferencesWindowView: View {
     @StateObject private var store = SettingsStore()

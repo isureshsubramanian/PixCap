@@ -164,23 +164,26 @@ That line is the proof the FFI works: those numbers come from Rust, not C#.
 | Shared core over FFI (presets, naming, history, syntax) | Written, follows the same C ABI the Mac app uses |
 | Screen capture via `GraphicsCapturePicker` | Written |
 | History browsing and full-text search | Written |
-| **Beautification (background, padding, shadow, frame)** | **Not implemented** — see below |
-| Annotation editor | Not implemented |
+| Beautification (background, padding, shadow, frame) | Written — renders through the Rust core, see below |
+| Annotation editor | Written |
+| Region capture, global shortcut, tray icon | Written |
 | Recording, OCR, pins, scrolling capture | Not implemented |
 
-### The beautification gap
+### Where beautification is rendered
 
-This is the important one. On macOS the renderer is written in Swift with Core
-Graphics, so Windows has nothing to call. There are two ways forward:
+On macOS the renderer is written in Swift with Core Graphics, so there was
+nothing for Windows to call. Two options were open:
 
-1. **Re-implement it in C# with Win2D** — fast to write, but ADR-001 §7 warns
-   about exactly this: two renderers drift, and the promise of pixel-identical
-   output across platforms breaks quietly.
-2. **Move the renderer into the Rust core** and have both shells call it —
-   more work up front, but it is what the architecture assumed, and it would
-   also give the CLI real image rendering.
+1. **Re-implement it in C# with Win2D** — fast to write, but it leaves two
+   renderers to drift apart, and the drift is silent.
+2. **Put a renderer in the Rust core** and have Windows and the CLI call it.
+   More work up front, and it also gives the CLI real image rendering.
 
-Option 2 is the right one. It is not done yet.
+Option 2 is what shipped: `crates/pixcap-core/src/render/`, built on
+`tiny-skia`. macOS still draws through Core Graphics, so each app renders with
+the framework native to its platform. What keeps the two in agreement is the
+shared `AnnotationDocument` schema — the same document produces the same
+layout on both, because both read the same field definitions.
 
 ---
 
