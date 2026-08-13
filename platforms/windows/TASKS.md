@@ -1,33 +1,30 @@
 # PixCap on Windows — working notes and open tasks
 
-This file is the handoff for continuing PixCap's Windows work **from a Windows
-machine**, where the app can actually be built, run, and observed. Everything
-before this point was written on macOS, which is why the bugs below exist: the
-code compiled and the logic was tested, but nobody watched it run.
+Notes on the Windows port: how it is put together, what is done, what is not,
+and the reasoning behind the decisions that are not obvious from the code.
+
+Windows work needs a Windows machine. Much of the early code was written on
+macOS and compiled cleanly while still being wrong at runtime — most of the
+closed bugs below are that failure mode, which is why the convention here is to
+launch the app and watch it rather than trust a green build.
 
 ---
 
-## Rule 1: do not touch macOS
+## Changing the shared core
 
-The macOS app is finished and the owner is happy with it. It must not change.
+The Rust core is shared with macOS, so a change in `crates/` reaches both apps.
 
-- **Off limits:** `platforms/macos/**` — anything at all
-- **Fine to change:** `platforms/windows/**`
-- **Fine to change with care:** `crates/**` — the shared Rust core
+- `platforms/windows/**` — self-contained, change freely
+- `crates/**` — shared; adding functions, FFI entry points, or fields with
+  `serde` defaults is safe, changing behaviour macOS already relies on is not
+- `platforms/macos/**` — the macOS app is stable and its UI is settled; leave
+  it alone unless a change is specifically about macOS
 
-The core is shared, so a change there affects macOS too. Adding new functions,
-new FFI entry points, or new fields with `serde` defaults is safe. Changing the
-behaviour of anything macOS already calls is not. After touching `crates/`,
-confirm nothing under `platforms/macos` was modified:
+After touching `crates/`, confirm nothing on the macOS side moved with it:
 
 ```powershell
 git status --short platforms/macos/
 ```
-
-## Rule 2: verify by running it
-
-The point of moving to Windows is that the app can be launched. Build it, run
-it, click the thing, look at the result. "It compiles" is not a verification.
 
 ---
 
