@@ -1,0 +1,14 @@
+[workspace]
+members = [
+    "crates/pixcap-core",
+    "crates/pixcap-ipc",
+    "crates/pixcap-ffi",
+    "crates/pixcap-cli",
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["PixCap Team"]
+license = "MIT"

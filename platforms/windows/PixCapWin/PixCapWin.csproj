@@ -1,0 +1,107 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <!--
+      Compiled against the Windows 11 SDK because GraphicsCaptureSession
+      .IsBorderRequired only exists from 22000 onwards. The minimum version
+      stays at 19041 so the app still runs on Windows 10.
+    -->
+    <TargetFramework>net8.0-windows10.0.22621.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+    <RootNamespace>PixCapWin</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- Shown in Explorer, the taskbar, Alt-Tab, and the installer. -->
+    <ApplicationIcon>..\installer\PixCap.ico</ApplicationIcon>
+    <Platforms>x86;x64;ARM64</Platforms>
+    <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
+    <UseWinUI>true</UseWinUI>
+    <EnableMsixTooling>true</EnableMsixTooling>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!--
+      For IGraphicsCaptureItemInterop, which is called through its vtable so
+      that per-monitor capture does not depend on the COM interop mode.
+    -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- Unpackaged: simpler to run from a VM without MSIX signing. -->
+    <WindowsPackageType>None</WindowsPackageType>
+    <!--
+      Framework-dependent, on both runtimes. A self-contained build was 276 MB
+      on disk and a 64 MB installer, and — the part that actually matters — it
+      froze a private copy of .NET and the Windows App SDK that would never
+      receive a security patch unless the whole app were rebuilt and every user
+      reinstalled it. Shared runtimes are serviced by Windows Update.
+      The installer checks for both and offers to fetch them.
+
+      An explicit RuntimeIdentifier is still required; it is defaulted here and
+      can be overridden with `dotnet build -r win-x64`. A Parallels VM on Apple
+      Silicon is ARM64.
+    -->
+    <WindowsAppSDKSelfContained>false</WindowsAppSDKSelfContained>
+    <SelfContained>false</SelfContained>
+    <!--
+      Accept any .NET from 8 upwards rather than 8 exactly. Without this the app
+      refuses to start on a machine carrying only a newer .NET, which is the
+      normal state of an up-to-date machine a year from now.
+    -->
+    <RollForward>LatestMajor</RollForward>
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">win-arm64</RuntimeIdentifier>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.6.240923002" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.1742" />
+  </ItemGroup>
+
+  <!--
+    Windows Forms, for one screen only: the region selection overlay.
+
+    WinUI 3 routes pointer input through a content island and applies
+    ProtectedCursor only when a mouse message arrives, so an overlay appearing
+    under a pointer that is standing still keeps the arrow it inherited. A
+    classic HWND owns WM_SETCURSOR, where the crosshair is one property.
+
+    Referenced as a framework rather than switched on with UseWindowsForms:
+    that property imports the WinFX targets, which treat every .xaml file in
+    the project as WPF markup and fail on WinUI's.
+  -->
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.WindowsDesktop.App.WindowsForms" />
+  </ItemGroup>
+
+  <!--
+    The shared Rust core. The DLL has to match the app architecture, so the
+    path is chosen from the RuntimeIdentifier. Mixing them produces a
+    BadImageFormatException at the first P/Invoke, which is a confusing way to
+    discover the mistake, so a missing DLL fails the build instead.
+  -->
+  <PropertyGroup>
+    <PixCapRepoRoot>$(MSBuildThisFileDirectory)..\..\..\</PixCapRepoRoot>
+    <PixCapRustTarget Condition="'$(RuntimeIdentifier)' == 'win-arm64'">aarch64-pc-windows-msvc</PixCapRustTarget>
+    <PixCapRustTarget Condition="'$(RuntimeIdentifier)' == 'win-x64'">x86_64-pc-windows-msvc</PixCapRustTarget>
+    <PixCapRustDll>$(PixCapRepoRoot)target\$(PixCapRustTarget)\release\pixcap_ffi.dll</PixCapRustDll>
+    <!-- Host build, used when cargo was run without an explicit target. -->
+    <PixCapRustDllHost>$(PixCapRepoRoot)target\release\pixcap_ffi.dll</PixCapRustDllHost>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(PixCapRustDll)" Condition="Exists('$(PixCapRustDll)')">
+      <Link>pixcap_ffi.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="$(PixCapRustDllHost)"
+          Condition="!Exists('$(PixCapRustDll)') And Exists('$(PixCapRustDllHost)')">
+      <Link>pixcap_ffi.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <Target Name="VerifyPixCapCore" BeforeTargets="Build">
+    <Error Condition="!Exists('$(PixCapRustDll)') And !Exists('$(PixCapRustDllHost)')"
+           Text="pixcap_ffi.dll not found for $(RuntimeIdentifier). Build the core first: cargo build --release --target $(PixCapRustTarget)" />
+    <Warning Condition="!Exists('$(PixCapRustDll)') And Exists('$(PixCapRustDllHost)')"
+             Text="Using the host-built pixcap_ffi.dll. If it was not built for $(RuntimeIdentifier), P/Invoke will fail with BadImageFormatException. Build it with: cargo build --release --target $(PixCapRustTarget)" />
+  </Target>
+
+</Project>

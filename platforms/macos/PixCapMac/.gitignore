@@ -1,0 +1,4 @@
+
+build/
+*.dmg
+scripts/signing.env

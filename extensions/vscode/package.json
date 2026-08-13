@@ -1,0 +1,50 @@
+{
+  "name": "pixcap-vscode",
+  "displayName": "PixCap - Instant Screenshot Beautifier",
+  "description": "Capture & beautify code selection with PixCap native engine",
+  "version": "0.1.0",
+  "publisher": "PixCap",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other",
+    "Formatters"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "pixcap.captureSelection",
+        "title": "PixCap: Beautify Selected Code"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "pixcap.captureSelection",
+          "group": "navigation@1"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "pixcap.captureSelection",
+        "key": "ctrl+shift+p i",
+        "mac": "cmd+shift+p i",
+        "when": "editorTextFocus && editorHasSelection"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -w -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.80.0",
+    "typescript": "^5.0.0"
+  }
+}

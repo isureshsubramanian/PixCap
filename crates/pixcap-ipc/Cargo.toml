@@ -1,0 +1,12 @@
+[package]
+name = "pixcap-ipc"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+interprocess = "2.4.3"
+pixcap-core = { path = "../pixcap-core" }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "2.0"

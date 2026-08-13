@@ -1,0 +1,76 @@
+%YAML 1.2
+---
+# Written for PixCap — syntect's default set has JavaScript but not TypeScript.
+name: TypeScript
+file_extensions: [ts, tsx, mts, cts]
+scope: source.ts
+
+contexts:
+  main:
+    - include: comments
+    - include: strings
+    - include: numbers
+    - include: decorators
+    - include: keywords
+    - include: types
+
+  comments:
+    - match: //.*$
+      scope: comment.line.double-slash.ts
+    - match: /\*
+      push:
+        - meta_scope: comment.block.ts
+        - match: \*/
+          pop: true
+
+  strings:
+    - match: '`'
+      push:
+        - meta_scope: string.quoted.template.ts
+        - match: \$\{
+          scope: punctuation.section.interpolation.begin.ts
+          push:
+            - match: \}
+              scope: punctuation.section.interpolation.end.ts
+              pop: true
+            - include: main
+        - match: '`'
+          pop: true
+    - match: '"'
+      push:
+        - meta_scope: string.quoted.double.ts
+        - match: \\.
+          scope: constant.character.escape.ts
+        - match: '"'
+          pop: true
+    - match: "'"
+      push:
+        - meta_scope: string.quoted.single.ts
+        - match: \\.
+          scope: constant.character.escape.ts
+        - match: "'"
+          pop: true
+
+  numbers:
+    - match: \b(0[xX][0-9a-fA-F_]+n?|0[bB][01_]+n?|0[oO][0-7_]+n?|\d[\d_]*(\.\d[\d_]*)?([eE][+-]?\d+)?n?)\b
+      scope: constant.numeric.ts
+
+  decorators:
+    - match: '@[A-Za-z_]\w*'
+      scope: storage.modifier.decorator.ts
+
+  keywords:
+    - match: \b(abstract|declare|enum|export|implements|import|interface|namespace|module|type|readonly|private|protected|public|static|override|satisfies|keyof|infer|asserts)\b
+      scope: storage.modifier.ts
+    - match: \b(class|const|function|let|var|get|set|constructor)\b
+      scope: storage.type.ts
+    - match: \b(break|case|catch|continue|default|do|else|finally|for|if|in|of|return|switch|throw|try|while|yield|await|async|new|delete|instanceof|typeof|void|as)\b
+      scope: keyword.control.ts
+    - match: \b(true|false|null|undefined|this|super)\b
+      scope: constant.language.ts
+
+  types:
+    - match: \b(string|number|boolean|bigint|symbol|object|unknown|never|any|Record|Partial|Promise|Array|ReadonlyArray)\b
+      scope: support.type.ts
+    - match: \b([A-Z][A-Za-z0-9_]*)\b
+      scope: entity.name.type.ts

@@ -1,0 +1,67 @@
+%YAML 1.2
+---
+# Written for PixCap — not present in syntect's default set.
+name: Kotlin
+file_extensions: [kt, kts]
+scope: source.kotlin
+
+contexts:
+  main:
+    - include: comments
+    - include: strings
+    - include: numbers
+    - include: annotations
+    - include: keywords
+    - include: types
+
+  comments:
+    - match: //.*$
+      scope: comment.line.double-slash.kotlin
+    - match: /\*
+      push:
+        - meta_scope: comment.block.kotlin
+        - match: \*/
+          pop: true
+
+  strings:
+    - match: '"""'
+      push:
+        - meta_scope: string.quoted.triple.kotlin
+        - match: '"""'
+          pop: true
+    - match: '"'
+      push:
+        - meta_scope: string.quoted.double.kotlin
+        - match: \$\{
+          scope: punctuation.section.interpolation.begin.kotlin
+          push:
+            - match: \}
+              scope: punctuation.section.interpolation.end.kotlin
+              pop: true
+            - include: main
+        - match: \\.
+          scope: constant.character.escape.kotlin
+        - match: '"'
+          pop: true
+
+  numbers:
+    - match: \b(0[xX][0-9a-fA-F_]+|0[bB][01_]+|\d[\d_]*(\.\d[\d_]*)?([eE][+-]?\d+)?[fFlLuU]?)\b
+      scope: constant.numeric.kotlin
+
+  annotations:
+    - match: '@[A-Za-z_]\w*'
+      scope: storage.modifier.annotation.kotlin
+
+  keywords:
+    - match: \b(class|object|interface|fun|val|var|typealias|constructor|init|companion|enum|sealed|data|annotation|inline|value)\b
+      scope: storage.type.kotlin
+    - match: \b(if|else|when|for|while|do|return|break|continue|throw|try|catch|finally|is|in|as|by|suspend)\b
+      scope: keyword.control.kotlin
+    - match: \b(public|private|protected|internal|open|final|abstract|override|lateinit|const|vararg|noinline|crossinline|reified|operator|infix|tailrec|external)\b
+      scope: storage.modifier.kotlin
+    - match: \b(true|false|null|this|super)\b
+      scope: constant.language.kotlin
+
+  types:
+    - match: \b([A-Z][A-Za-z0-9_]*)\b
+      scope: entity.name.type.kotlin

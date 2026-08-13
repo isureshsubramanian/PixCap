@@ -1,0 +1,68 @@
+%YAML 1.2
+---
+# Written for PixCap. syntect bundles Sublime Text's default packages, which
+# predate Swift, so the language had to be added here.
+name: Swift
+file_extensions: [swift]
+scope: source.swift
+
+contexts:
+  main:
+    - include: comments
+    - include: strings
+    - include: numbers
+    - include: attributes
+    - include: keywords
+    - include: types
+
+  comments:
+    - match: //.*$
+      scope: comment.line.double-slash.swift
+    - match: /\*
+      push:
+        - meta_scope: comment.block.swift
+        - match: \*/
+          pop: true
+
+  strings:
+    - match: '"""'
+      push:
+        - meta_scope: string.quoted.triple.swift
+        - match: '"""'
+          pop: true
+    - match: '"'
+      push:
+        - meta_scope: string.quoted.double.swift
+        - match: \\\(
+          scope: punctuation.section.interpolation.begin.swift
+          push:
+            - match: \)
+              scope: punctuation.section.interpolation.end.swift
+              pop: true
+            - include: main
+        - match: \\.
+          scope: constant.character.escape.swift
+        - match: '"'
+          pop: true
+
+  numbers:
+    - match: \b(0x[0-9a-fA-F_]+|0b[01_]+|0o[0-7_]+|\d[\d_]*(\.\d[\d_]*)?([eE][+-]?\d+)?)\b
+      scope: constant.numeric.swift
+
+  attributes:
+    - match: '@[A-Za-z_]\w*'
+      scope: storage.modifier.attribute.swift
+
+  keywords:
+    - match: \b(associatedtype|class|deinit|enum|extension|fileprivate|func|import|init|inout|internal|let|open|operator|private|protocol|public|rethrows|static|struct|subscript|typealias|var|actor|macro)\b
+      scope: storage.type.swift
+    - match: \b(break|case|continue|default|defer|do|else|fallthrough|for|guard|if|in|repeat|return|switch|where|while|throw|catch|try|async|await)\b
+      scope: keyword.control.swift
+    - match: \b(any|as|is|some|super|self|Self|nil|true|false|throws|mutating|nonmutating|indirect|lazy|weak|unowned|final|required|override|convenience|dynamic|optional|borrowing|consuming|nonisolated|isolated)\b
+      scope: keyword.other.swift
+    - match: \b(true|false|nil)\b
+      scope: constant.language.swift
+
+  types:
+    - match: \b([A-Z][A-Za-z0-9_]*)\b
+      scope: entity.name.type.swift

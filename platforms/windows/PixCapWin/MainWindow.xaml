@@ -1,0 +1,492 @@
+<Window
+    x:Class="PixCapWin.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:views="using:PixCapWin.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="PixCap">
+
+    <Grid x:Name="RootGrid">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Title bar strip -->
+        <Grid x:Name="AppTitleBar" Grid.Row="0" Height="44" Background="Transparent">
+            <StackPanel Orientation="Horizontal" Spacing="10" Margin="16,0" VerticalAlignment="Center">
+                <Border Width="20" Height="20" CornerRadius="5">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Color="#5947EB" Offset="0" />
+                            <GradientStop Color="#4F7BFA" Offset="0.55" />
+                            <GradientStop Color="#4FB8F2" Offset="1" />
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <FontIcon Glyph="&#xE7B7;" FontSize="11" Foreground="White" />
+                </Border>
+                <TextBlock Text="PixCap" FontWeight="SemiBold" VerticalAlignment="Center" />
+            </StackPanel>
+        </Grid>
+
+        <NavigationView x:Name="Nav" Grid.Row="1"
+                        PaneDisplayMode="Left"
+                        IsBackButtonVisible="Collapsed"
+                        IsSettingsVisible="False"
+                        OpenPaneLength="196"
+                        SelectionChanged="OnNavSelectionChanged">
+
+            <NavigationView.MenuItems>
+                <NavigationViewItem Content="Capture" Tag="capture" IsSelected="True">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE722;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem Content="Beautify" Tag="beautify">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE790;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem Content="Library" Tag="library">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE8FD;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem Content="Settings" Tag="settings">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE713;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+            </NavigationView.MenuItems>
+
+            <Grid>
+                <!-- ============ CAPTURE ============ -->
+                <Grid x:Name="CapturePage" Padding="32,24,32,24">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0" Spacing="4" Margin="0,0,0,20">
+                        <TextBlock Text="Capture" FontSize="28" FontWeight="SemiBold" />
+                        <TextBlock Text="Pick a window, a display, or drag out an area. Captures are saved and indexed automatically."
+                                   Opacity="0.7" TextWrapping="Wrap" />
+                    </StackPanel>
+
+                    <!-- Action cards -->
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="12" Margin="0,0,0,24">
+                        <Button x:Name="CaptureButton" Click="OnCaptureClick" Padding="0"
+                                Background="Transparent" BorderThickness="0">
+                            <Border Width="230" Height="112" CornerRadius="8" Padding="16"
+                                    Background="{ThemeResource AccentFillColorDefaultBrush}">
+                                <StackPanel VerticalAlignment="Center" Spacing="8">
+                                    <FontIcon Glyph="&#xE722;" FontSize="22" Foreground="White" />
+                                    <TextBlock Text="Capture window or screen" FontWeight="SemiBold"
+                                               Foreground="White" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Border>
+                        </Button>
+
+                        <Button x:Name="CaptureAreaButton" Click="OnCaptureAreaClick" Padding="0"
+                                Background="Transparent" BorderThickness="0">
+                            <Border Width="200" Height="112" CornerRadius="8" Padding="16"
+                                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                                <StackPanel VerticalAlignment="Center" Spacing="8">
+                                    <FontIcon Glyph="&#xE7A8;" FontSize="20" />
+                                    <TextBlock Text="Capture area" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Border>
+                        </Button>
+
+                        <Button x:Name="OpenFolderButton" Click="OnOpenFolderClick" Padding="0"
+                                Background="Transparent" BorderThickness="0">
+                            <Border Width="200" Height="112" CornerRadius="8" Padding="16"
+                                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                                <StackPanel VerticalAlignment="Center" Spacing="8">
+                                    <FontIcon Glyph="&#xE838;" FontSize="20" />
+                                    <TextBlock Text="Open save folder" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Border>
+                        </Button>
+                    </StackPanel>
+
+                    <!-- Latest capture preview -->
+                    <Border Grid.Row="2" CornerRadius="8" Padding="20"
+                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                        <Grid>
+                            <StackPanel x:Name="NoCapturesPanel" VerticalAlignment="Center"
+                                        HorizontalAlignment="Center" Spacing="10">
+                                <FontIcon Glyph="&#xE722;" FontSize="34" Opacity="0.35" />
+                                <TextBlock Text="No captures yet" FontSize="16" Opacity="0.65"
+                                           HorizontalAlignment="Center" />
+                                <TextBlock Text="Your most recent capture appears here."
+                                           Opacity="0.45" HorizontalAlignment="Center" />
+                            </StackPanel>
+
+                            <Grid x:Name="LatestPanel" Visibility="Collapsed">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+
+                                <StackPanel Grid.Row="0" Spacing="2" Margin="0,0,0,12">
+                                    <TextBlock x:Name="LatestTitle" FontWeight="SemiBold"
+                                               TextTrimming="CharacterEllipsis" />
+                                    <TextBlock x:Name="LatestSubtitle" Opacity="0.6" FontSize="12" />
+                                </StackPanel>
+
+                                <Border Grid.Row="1" CornerRadius="6" Background="#20000000">
+                                    <Image x:Name="LatestImage" Stretch="Uniform" Margin="8" />
+                                </Border>
+                            </Grid>
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <!-- ============ BEAUTIFY ============ -->
+                <Grid x:Name="BeautifyPage" Visibility="Collapsed">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="300" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Preview -->
+                    <Grid Grid.Column="0" Padding="32,24,20,24">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0" Spacing="4" Margin="0,0,0,16">
+                            <TextBlock Text="Beautify" FontSize="28" FontWeight="SemiBold" />
+                            <TextBlock x:Name="BeautifySubtitle" Opacity="0.7"
+                                       Text="Rendered by the shared Rust core." TextWrapping="Wrap" />
+                        </StackPanel>
+
+                        <!-- Tool palette -->
+                        <ItemsControl x:Name="ToolPalette" Grid.Row="1" Margin="0,0,0,10"
+                                      VerticalAlignment="Top">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" Spacing="4" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+
+                        <Border Grid.Row="2" CornerRadius="8" Padding="16"
+                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                            <Grid x:Name="PreviewArea">
+                                <StackPanel x:Name="BeautifyEmptyPanel" VerticalAlignment="Center"
+                                            HorizontalAlignment="Center" Spacing="10">
+                                    <FontIcon Glyph="&#xE790;" FontSize="34" Opacity="0.35" />
+                                    <TextBlock Text="Capture something first" FontSize="16" Opacity="0.65"
+                                               HorizontalAlignment="Center" />
+                                </StackPanel>
+
+                                <!-- The preview and the interactive overlay share one cell, so
+                                     pointer coordinates map directly onto the rendered canvas. -->
+                                <Grid x:Name="PreviewHost" HorizontalAlignment="Center"
+                                      VerticalAlignment="Center">
+                                    <Image x:Name="BeautifyPreview" Stretch="Uniform"
+                                           Visibility="Collapsed" />
+                                    <Border x:Name="CanvasHost" />
+                                </Grid>
+
+                                <TextBox x:Name="TextEntryBox" Visibility="Collapsed" Width="240"
+                                         PlaceholderText="Type, then press Enter"
+                                         HorizontalAlignment="Center" VerticalAlignment="Center"
+                                         KeyDown="OnTextEntryKeyDown" />
+
+                                <ProgressRing x:Name="BeautifyProgress" IsActive="False"
+                                              Width="40" Height="40" />
+                            </Grid>
+                        </Border>
+
+                        <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="8" Margin="0,16,0,0">
+                            <Button x:Name="UndoButton" Content="Undo" Click="OnUndoClick" IsEnabled="False" />
+                            <Button x:Name="RedoButton" Content="Redo" Click="OnRedoClick" IsEnabled="False" />
+                            <Button x:Name="ClearButton" Content="Clear" Click="OnClearClick" IsEnabled="False" />
+                            <Button x:Name="RenderButton" Content="Render" Click="OnRenderClick"
+                                    Style="{StaticResource AccentButtonStyle}" />
+                            <Button x:Name="SaveRenderButton" Content="Save as..." Click="OnSaveRenderClick"
+                                    IsEnabled="False" />
+                            <Button x:Name="RevealRenderButton" Content="Show in folder"
+                                    Click="OnRevealRenderClick" IsEnabled="False" />
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Controls -->
+                    <ScrollViewer Grid.Column="1" Padding="0,24,32,24">
+                        <StackPanel Spacing="16">
+                            <StackPanel Spacing="6">
+                                <TextBlock Text="Background" FontWeight="SemiBold" />
+                                <ComboBox x:Name="PresetCombo" HorizontalAlignment="Stretch"
+                                          SelectionChanged="OnOptionChanged" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="6">
+                                <TextBlock Text="Window frame" FontWeight="SemiBold" />
+                                <ComboBox x:Name="FrameCombo" HorizontalAlignment="Stretch"
+                                          SelectionChanged="OnOptionChanged">
+                                    <x:String>macOS</x:String>
+                                    <x:String>Windows</x:String>
+                                    <x:String>Minimal</x:String>
+                                    <x:String>None</x:String>
+                                </ComboBox>
+                            </StackPanel>
+
+                            <StackPanel Spacing="6">
+                                <TextBlock Text="Texture" FontWeight="SemiBold" />
+                                <ComboBox x:Name="TextureCombo" HorizontalAlignment="Stretch"
+                                          SelectionChanged="OnOptionChanged">
+                                    <x:String>None</x:String>
+                                    <x:String>Grain</x:String>
+                                    <x:String>Paper</x:String>
+                                    <x:String>Linen</x:String>
+                                    <x:String>Dots</x:String>
+                                    <x:String>Grid</x:String>
+                                </ComboBox>
+                            </StackPanel>
+
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="Padding" FontWeight="SemiBold" />
+                                <Slider x:Name="PaddingSlider" Minimum="0" Maximum="160" Value="48"
+                                        ValueChanged="OnSliderChanged" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="Corner radius" FontWeight="SemiBold" />
+                                <Slider x:Name="RadiusSlider" Minimum="0" Maximum="48" Value="14"
+                                        ValueChanged="OnSliderChanged" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="Shadow" FontWeight="SemiBold" />
+                                <Slider x:Name="ShadowSlider" Minimum="0" Maximum="80" Value="30"
+                                        ValueChanged="OnSliderChanged" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="Grain" FontWeight="SemiBold" />
+                                <Slider x:Name="GrainSlider" Minimum="0" Maximum="100" Value="0"
+                                        ValueChanged="OnSliderChanged" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="6">
+                                <TextBlock Text="Window title" FontWeight="SemiBold" />
+                                <TextBox x:Name="TitleBox" Text="PixCap" TextChanged="OnTitleChanged" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="6">
+                                <TextBlock Text="Annotation colour" FontWeight="SemiBold" />
+
+                                <!-- Six presets for speed, and any colour at all
+                                     behind the button. The swatches are built in
+                                     code so the palette lives in one place. -->
+                                <ItemsControl x:Name="ColorSwatches">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal" Spacing="6" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                </ItemsControl>
+
+                                <Button x:Name="ColorPickerButton" HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Left">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <Border x:Name="ColorPreview" Width="18" Height="18"
+                                                CornerRadius="3" BorderThickness="1"
+                                                BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}" />
+                                        <TextBlock x:Name="ColorHexText" FontFamily="Consolas"
+                                                   VerticalAlignment="Center" />
+                                    </StackPanel>
+                                    <Button.Flyout>
+                                        <!-- The wheel is built in code; see ColorWheel. -->
+                                        <Flyout x:Name="ColorFlyout" />
+                                    </Button.Flyout>
+                                </Button>
+                            </StackPanel>
+
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="Stroke width" FontWeight="SemiBold" />
+                                <Slider x:Name="StrokeSlider" Minimum="1" Maximum="16" Value="4"
+                                        ValueChanged="OnAnnotationSliderChanged" />
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal" Spacing="12">
+                                <CheckBox x:Name="FilledCheck" Content="Filled"
+                                          Checked="OnAnnotationCheckChanged" Unchecked="OnAnnotationCheckChanged" />
+                                <CheckBox x:Name="DashedCheck" Content="Dashed"
+                                          Checked="OnAnnotationCheckChanged" Unchecked="OnAnnotationCheckChanged" />
+                            </StackPanel>
+
+                            <Button x:Name="ResetCropButton" Content="Reset crop"
+                                    Click="OnResetCropClick" IsEnabled="False"
+                                    HorizontalAlignment="Stretch" />
+
+                            <TextBlock x:Name="CanvasSizeText" Opacity="0.6" FontSize="12"
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+
+                <!-- ============ LIBRARY ============ -->
+                <Grid x:Name="LibraryPage" Padding="32,24,32,24" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0" Spacing="4" Margin="0,0,0,16">
+                        <TextBlock Text="Library" FontSize="28" FontWeight="SemiBold" />
+                        <TextBlock x:Name="LibrarySummary" Opacity="0.7" />
+                    </StackPanel>
+
+                    <AutoSuggestBox x:Name="SearchBox" Grid.Row="1" Margin="0,0,0,16"
+                                    PlaceholderText="Search text inside captures"
+                                    QueryIcon="Find" TextChanged="OnSearchChanged" />
+
+                    <Grid Grid.Row="2">
+                        <StackPanel x:Name="EmptyLibraryPanel" VerticalAlignment="Center"
+                                    HorizontalAlignment="Center" Spacing="10">
+                            <FontIcon Glyph="&#xE8FD;" FontSize="34" Opacity="0.35" />
+                            <TextBlock x:Name="EmptyLibraryText" Text="Nothing captured yet"
+                                       FontSize="16" Opacity="0.65" HorizontalAlignment="Center" />
+                        </StackPanel>
+
+                        <GridView x:Name="HistoryGrid" SelectionMode="Single" IsItemClickEnabled="True"
+                                  ItemClick="OnItemClick">
+                            <GridView.ItemTemplate>
+                                <DataTemplate x:DataType="views:CaptureItem">
+                                    <Grid Width="248" Height="212" Margin="0,0,14,14" CornerRadius="8"
+                                          Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                          BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                          BorderThickness="1">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="128" />
+                                            <RowDefinition Height="*" />
+                                        </Grid.RowDefinitions>
+
+                                        <Border Grid.Row="0" Background="#18000000"
+                                                CornerRadius="8,8,0,0">
+                                            <Image Source="{x:Bind Thumbnail}" Stretch="UniformToFill"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Border>
+
+                                        <StackPanel Grid.Row="1" Padding="12,8" Spacing="2">
+                                            <TextBlock Text="{x:Bind Title}" FontSize="13" FontWeight="SemiBold"
+                                                       TextTrimming="CharacterEllipsis" MaxLines="1" />
+                                            <TextBlock Text="{x:Bind Subtitle}" FontSize="11" Opacity="0.6"
+                                                       TextTrimming="CharacterEllipsis" MaxLines="1" />
+                                            <TextBlock Text="{x:Bind TextPreview}" FontSize="11" Opacity="0.45"
+                                                       Visibility="{x:Bind HasText}"
+                                                       TextTrimming="CharacterEllipsis" MaxLines="1" />
+                                        </StackPanel>
+                                    </Grid>
+                                </DataTemplate>
+                            </GridView.ItemTemplate>
+                        </GridView>
+                    </Grid>
+                </Grid>
+
+                <!-- ============ SETTINGS ============ -->
+                <ScrollViewer x:Name="SettingsPage" Padding="32,24,32,24" Visibility="Collapsed">
+                    <StackPanel Spacing="16" MaxWidth="720" HorizontalAlignment="Left">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Settings" FontSize="28" FontWeight="SemiBold" />
+                            <TextBlock Text="Shared with the macOS app through the Rust core." Opacity="0.7" />
+                        </StackPanel>
+
+                        <Border CornerRadius="8" Padding="16"
+                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                            <StackPanel Spacing="12">
+                                <TextBlock Text="Save location" FontWeight="SemiBold" />
+                                <TextBlock x:Name="SaveLocationText" Opacity="0.7" FontSize="12"
+                                           TextWrapping="Wrap" />
+                                <Button Content="Open folder" Click="OnOpenFolderClick" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border CornerRadius="8" Padding="16"
+                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                            <StackPanel Spacing="12">
+                                <TextBlock Text="Capture area shortcut" FontWeight="SemiBold" />
+                                <TextBlock Opacity="0.6" FontSize="12" TextWrapping="Wrap"
+                                           Text="Works from any application, while PixCap is running. Win+Shift+S belongs to the Snipping Tool and cannot be reused." />
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Border x:Name="HotkeyDisplayBorder" CornerRadius="4" Padding="12,6"
+                                            MinWidth="150" VerticalAlignment="Center"
+                                            Background="{ThemeResource ControlFillColorDefaultBrush}"
+                                            BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                                            BorderThickness="1">
+                                        <TextBlock x:Name="HotkeyText" FontFamily="Consolas" />
+                                    </Border>
+                                    <Button x:Name="HotkeyChangeButton" Content="Change"
+                                            Click="OnHotkeyChangeClick" />
+                                    <Button x:Name="HotkeyResetButton" Content="Reset"
+                                            Click="OnHotkeyResetClick" />
+                                </StackPanel>
+                                <TextBlock x:Name="HotkeyStatus" Opacity="0.7" FontSize="12"
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border CornerRadius="8" Padding="16"
+                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                            <StackPanel Spacing="12">
+                                <TextBlock Text="File naming" FontWeight="SemiBold" />
+                                <TextBlock Text="Resolved by the shared core, so names match the Mac app."
+                                           Opacity="0.6" FontSize="12" TextWrapping="Wrap" />
+                                <TextBox x:Name="PatternBox" TextChanged="OnPatternChanged" />
+                                <TextBlock x:Name="PatternPreview" Opacity="0.7" FontSize="12"
+                                           FontFamily="Consolas" TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border CornerRadius="8" Padding="16"
+                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                            <StackPanel Spacing="10">
+                                <TextBlock Text="Shared core" FontWeight="SemiBold" />
+                                <TextBlock x:Name="CoreStatusText" Opacity="0.7" FontSize="12"
+                                           TextWrapping="Wrap" />
+                                <ItemsControl x:Name="PresetList" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border CornerRadius="8" Padding="16"
+                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="Not available on Windows yet" FontWeight="SemiBold" />
+                                <TextBlock Opacity="0.6" FontSize="12" TextWrapping="Wrap"
+                                           Text="Screen recording, OCR, pinning a capture to the screen, and scrolling capture are implemented on macOS only. Capture, beautification, and annotation all work here, rendered by the shared Rust core." />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </NavigationView>
+
+        <!-- Status -->
+        <Border Grid.Row="2" Padding="16,8" Background="{ThemeResource LayerFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="0,1,0,0">
+            <TextBlock x:Name="StatusText" FontSize="12" Opacity="0.75"
+                       TextTrimming="CharacterEllipsis" MaxLines="1" />
+        </Border>
+    </Grid>
+</Window>

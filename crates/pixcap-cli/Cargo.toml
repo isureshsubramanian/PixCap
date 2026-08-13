@@ -1,0 +1,15 @@
+[package]
+name = "pixcap-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "pixcap"
+path = "src/main.rs"
+
+[dependencies]
+pixcap-core = { path = "../pixcap-core" }
+pixcap-ipc = { path = "../pixcap-ipc" }
+clap = { version = "4.5", features = ["derive"] }
+std-semaphore = "0.1"
