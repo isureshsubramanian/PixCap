@@ -23,8 +23,8 @@ what matters, hiding what shouldn't be shared, and framing the result so it
 reads well in a pull request or a deck — is where the time actually goes.
 PixCap does that part.
 
-It runs entirely on your machine. There is no account, no telemetry, and no
-server to upload to, because there is no server.
+No account, no telemetry, no server — your screenshots never leave your
+machine.
 
 ## Features
 
