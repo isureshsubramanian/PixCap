@@ -68,13 +68,19 @@ covers is dropped before it reaches the clipboard.
 
 ## Installing
 
-**No binaries are published yet** — build from source with the steps below.
-Signed builds will appear under
-[Releases](https://github.com/isureshsubramanian/PixCap/releases) when they are
-ready.
+Grab the latest build from
+[Releases](https://github.com/isureshsubramanian/PixCap/releases/latest).
 
-- **macOS** — 14 or newer, Apple silicon and Intel
-- **Windows** — 10 version 1903 or newer, x64 and ARM64
+| Platform | Download |
+|:--|:--|
+| **macOS** 14+, Apple silicon and Intel | `PixCap-2.0.0.dmg` — signed and notarised |
+| **Windows** 10 (1903+) on ARM | `PixCap-2.0.0-arm64-setup.exe` |
+| **Windows** 10 (1903+) on Intel or AMD | `PixCap-2.0.0-x64-setup.exe` |
+
+The Windows installers are **not code-signed** yet, so SmartScreen shows
+*"Windows protected your PC"* — choose **More info → Run anyway**. Checksums
+are published as `SHA256SUMS.txt` on the release if you want to verify the
+download first. macOS is notarised and opens without a warning.
 
 ## How it is put together
 
