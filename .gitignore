@@ -13,9 +13,17 @@ node_modules/
 .github/
 .github/workflows/
 
-# Sample output renders
+# Sample output renders, which the CLI and the examples write in place.
+# Keep this broad, but never let it swallow real assets — anything under
+# images/ or website/assets/ is committed on purpose.
 *.svg
 *.png
+!images/**
+!website/assets/**
+
+# Full-resolution master art stays local. Commit the optimised export beside
+# it instead — a 5 MB PNG in a README costs every visitor, forever.
+images/masters/
 
 # Backup files
 **/*.rs.bk
