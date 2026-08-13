@@ -89,6 +89,17 @@ public enum AnnotationTool: String, CaseIterable, Identifiable {
     public var isCanvasOperation: Bool {
         self == .crop
     }
+
+    /// Tools whose purpose is to hide what is underneath them.
+    ///
+    /// These only conceal once the image is flattened. In an editable document
+    /// the source image is stored untouched and the concealment is recorded as
+    /// an instruction beside it, so anything hidden this way is still readable
+    /// in that file. Anywhere a document can leave the app unflattened, check
+    /// this and warn.
+    public var concealsContent: Bool {
+        self == .blur || self == .redaction
+    }
 }
 
 public enum BlurStyle: String, CaseIterable, Codable {

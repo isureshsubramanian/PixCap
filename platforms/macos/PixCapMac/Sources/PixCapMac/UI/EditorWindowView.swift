@@ -570,17 +570,37 @@ public struct EditorWindowView: View {
 
     // MARK: - Phase 2 actions
 
+    /// Rectangles, in image space, of every annotation that hides what is under it.
+    private func concealedRegions() -> [CGRect] {
+        store.items
+            .filter { $0.tool.concealsContent }
+            .map { CGRect(x: min($0.start.x, $0.end.x),
+                          y: min($0.start.y, $0.end.y),
+                          width: abs($0.end.x - $0.start.x),
+                          height: abs($0.end.y - $0.start.y)) }
+            .filter { !$0.isEmpty }
+    }
+
+    /// Copies the text in the capture — the text still *visible* in it.
+    ///
+    /// Recognition runs on the source rather than the composite, because the
+    /// composite is scaled and sits on a background, both of which cost
+    /// accuracy. That means Vision also reads whatever is under a blur or a
+    /// redaction, so those lines are dropped before anything reaches the
+    /// clipboard. Extracting text someone deliberately hid would quietly
+    /// undo the redaction.
     private func extractText() {
         guard let image = inputImage else { return }
 
         do {
+            let hidden = concealedRegions()
             let recognition = try OCRService.recognize(
                 in: image,
                 includeBarcodes: Settings.bool(SettingsKey.ocrDetectBarcodes)
-            )
+            ).excludingText(coveredBy: hidden, imageSize: image.size)
 
             guard !recognition.isEmpty else {
-                statusMessage = "No text found"
+                statusMessage = hidden.isEmpty ? "No text found" : "No visible text found"
                 return
             }
 
@@ -595,6 +615,7 @@ public struct EditorWindowView: View {
             if let language = recognition.language { summary += " (\(language))" }
             if !recognition.barcodes.isEmpty { summary += " · \(recognition.barcodes.count) code(s)" }
             if !recognition.links.isEmpty { summary += " · \(recognition.links.count) link(s)" }
+            if !hidden.isEmpty { summary += " · hidden text excluded" }
             statusMessage = summary
         } catch {
             statusMessage = error.localizedDescription
@@ -608,13 +629,23 @@ public struct EditorWindowView: View {
     }
 
     /// Writes the source image plus a sidecar so this session can be reopened.
+    ///
+    /// The image written here is the *untouched source*. Blur and redaction are
+    /// recorded in the sidecar as instructions rather than applied to the
+    /// pixels, which is what makes the session re-editable — and what makes the
+    /// file unsafe to send. `confirmEditableSaveHidesNothing()` is the gate.
     private func saveDocument() {
         guard let image = inputImage else { return }
+        guard confirmEditableSaveHidesNothing() else { return }
+
+        let concealing = store.items.contains { $0.tool.concealsContent }
 
         let panel = NSSavePanel()
         panel.allowedContentTypes = [.png]
         panel.nameFieldStringValue = "PixCap-Editable.png"
-        panel.message = "The image is saved with a .pixcap.json sidecar holding your edits."
+        panel.message = concealing
+            ? "Saved with a .pixcap.json sidecar. Blurred and redacted areas stay readable in this copy — export a flattened image before sharing it."
+            : "The image is saved with a .pixcap.json sidecar holding your edits."
 
         guard panel.runModal() == .OK, let url = panel.url else { return }
 
@@ -638,6 +669,45 @@ public struct EditorWindowView: View {
             statusMessage = "Saved editable copy · \(sidecar.lastPathComponent)"
         } else {
             statusMessage = "Image saved, but the sidecar could not be written"
+        }
+    }
+
+    /// Warns before an editable save that would leave concealed areas readable.
+    ///
+    /// Returns `true` to go ahead with the editable save. Choosing to export
+    /// instead runs the flattened export and returns `false`, because that path
+    /// has already saved a file and the editable save must not also run.
+    private func confirmEditableSaveHidesNothing() -> Bool {
+        let hidden = store.items.filter { $0.tool.concealsContent }
+        guard !hidden.isEmpty else { return true }
+
+        let subject = hidden.count == 1
+            ? "one blurred or redacted area"
+            : "\(hidden.count) blurred or redacted areas"
+
+        let alert = NSAlert()
+        alert.alertStyle = .warning
+        alert.messageText = "This editable copy will not hide \(subject)."
+        alert.informativeText = """
+            An editable copy stores the original screenshot and describes your \
+            edits in a sidecar file beside it. The concealment is an \
+            instruction, not part of the image, so whatever you hid can still \
+            be read from the saved file.
+
+            Export a flattened image if you intend to send it to anyone.
+            """
+        alert.addButton(withTitle: "Export Flattened Image…")
+        alert.addButton(withTitle: "Save Editable Anyway")
+        alert.addButton(withTitle: "Cancel")
+
+        switch alert.runModal() {
+        case .alertFirstButtonReturn:
+            saveToFile()
+            return false
+        case .alertSecondButtonReturn:
+            return true
+        default:
+            return false
         }
     }
 

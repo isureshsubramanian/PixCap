@@ -54,12 +54,18 @@ it. Everything below the line is tracked in
 Annotations live in a `.pixcap.json` sidecar rather than being flattened into
 the image, so a capture can be reopened and re-edited long after it was taken.
 
-**When you export, copy, or share, the image is flattened** — annotations and
-redactions are composited into the pixels and the original is not recoverable
-from the result. The exception is **Save editable copy**, which deliberately
-writes the untouched source next to a sidecar so the session can be resumed.
-That file is for you, not for sending: its redactions have not been applied to
-the image yet.
+**When you export, copy, share, or pin, the image is flattened** — annotations
+and redactions are composited into the pixels, and the original is not
+recoverable from the result.
+
+**Save editable copy** is the one exception, by design: it writes the untouched
+source beside a sidecar so the session can be resumed later. That file is for
+you, not for sending, so the app says so before writing it and offers to export
+a flattened image instead.
+
+Text extraction respects redactions too. OCR runs on the source, for accuracy,
+so it does see what is underneath a blur — any line a concealing annotation
+covers is dropped before it reaches the clipboard.
 
 ## Installing
 

@@ -43,6 +43,47 @@ public enum OCRService {
 
         public var isEmpty: Bool { lines.isEmpty && barcodes.isEmpty }
 
+        /// A copy with every line a concealing region covers removed.
+        ///
+        /// `regions` are in image space — origin top-left, measured in image
+        /// points — because that is how annotations are stored. Vision reports
+        /// normalised boxes with the origin bottom-left, so the conversion
+        /// happens here, next to the convention it depends on.
+        ///
+        /// A line goes when a fifth of it is covered: enough to survive merely
+        /// grazing the edge of a redaction, strict enough that a partly hidden
+        /// line is not handed over. Overlapping regions are summed without
+        /// deduplication, which can only over-estimate coverage — it errs
+        /// toward dropping a line, which is the safe direction here.
+        ///
+        /// Barcodes are not filtered. Vision does not report their geometry
+        /// through this path, so their position cannot be checked.
+        public func excludingText(coveredBy regions: [CGRect], imageSize: CGSize) -> Recognition {
+            guard !regions.isEmpty, imageSize.width > 0, imageSize.height > 0 else { return self }
+
+            let kept = lines.filter { line in
+                let box = line.boundingBox
+                let imageSpace = CGRect(
+                    x: box.minX * imageSize.width,
+                    y: (1 - box.maxY) * imageSize.height,
+                    width: box.width * imageSize.width,
+                    height: box.height * imageSize.height
+                )
+
+                let area = imageSpace.width * imageSpace.height
+                guard area > 0 else { return true }
+
+                let covered = regions.reduce(CGFloat.zero) { running, region in
+                    let overlap = region.intersection(imageSpace)
+                    return overlap.isNull ? running : running + overlap.width * overlap.height
+                }
+
+                return covered / area < 0.2
+            }
+
+            return Recognition(lines: kept, language: language, barcodes: barcodes)
+        }
+
         /// URLs and bare domains found in the recognised text.
         public var links: [String] {
             let text = textPreservingLineBreaks
