@@ -166,12 +166,18 @@ impl CodeRenderer {
                     .replace('>', "&gt;")
                     .replace('"', "&quot;");
 
+                // xml:space="preserve" is required. Each token is its own
+                // <text>, and the default XML handling strips leading and
+                // trailing whitespace, so `let kept` renders as `letkept`.
                 svg.push_str(&format!(
-                    r#"<text x="{}" y="{}" font-family="JetBrains Mono, monospace" font-size="{}" fill="{}">{}</text>"#,
+                    r#"<text xml:space="preserve" x="{}" y="{}" font-family="JetBrains Mono, monospace" font-size="{}" fill="{}">{}</text>"#,
                     current_x, y, font_size, color_hex, escaped_text
                 ));
 
-                current_x += text.len() as f32 * char_width;
+                // Advance by character count, not byte length: `len()` counts
+                // UTF-8 bytes, so any non-ASCII character would push the rest
+                // of the line right by the number of extra bytes it occupies.
+                current_x += text.chars().count() as f32 * char_width;
             }
         }
 
