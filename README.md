@@ -89,7 +89,6 @@ platforms/
 extensions/
   vscode          VS Code extension (TypeScript)
   jetbrains       JetBrains plugin (Kotlin)
-website/          the pixcap.app landing page
 ```
 
 ### Two renderers, deliberately

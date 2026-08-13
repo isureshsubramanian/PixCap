@@ -19,7 +19,6 @@ node_modules/
 *.svg
 *.png
 !images/**
-!website/assets/**
 
 # Full-resolution master art stays local. Commit the optimised export beside
 # it instead — a 5 MB PNG in a README costs every visitor, forever.
@@ -51,6 +50,9 @@ ADR-001.md
 docs/ADR-001.md
 docs/
 *.adr.md
+
+# The pixcap.app marketing site is developed and deployed separately.
+website/
 
 # Environment & Credentials
 .env
