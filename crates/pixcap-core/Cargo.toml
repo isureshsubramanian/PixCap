@@ -11,7 +11,7 @@ image = { version = "0.25", features = ["png", "webp", "jpeg"] }
 regex = "1.10"
 thiserror = "2.0"
 syntect = "5.2"
-base64 = "0.22"
+base64 = "0.23"
 rusqlite = { version = "0.31", features = ["bundled"] }
 chrono = "0.4"
 uuid = { version = "1.8", features = ["v4"] }
