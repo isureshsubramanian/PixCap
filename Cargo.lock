@@ -1077,7 +1077,7 @@ checksum = "a89322df9ebe1c1578d689c92318e070967d1042b512afbe49518723f4e6d5cd"
 
 [[package]]
 name = "pixcap-cli"
-version = "0.1.0"
+version = "2.0.0"
 dependencies = [
  "clap",
  "pixcap-core",
@@ -1087,7 +1087,7 @@ dependencies = [
 
 [[package]]
 name = "pixcap-core"
-version = "0.1.0"
+version = "2.0.0"
 dependencies = [
  "base64",
  "chrono",
@@ -1107,7 +1107,7 @@ dependencies = [
 
 [[package]]
 name = "pixcap-ffi"
-version = "0.1.0"
+version = "2.0.0"
 dependencies = [
  "image",
  "pixcap-core",
@@ -1117,7 +1117,7 @@ dependencies = [
 
 [[package]]
 name = "pixcap-ipc"
-version = "0.1.0"
+version = "2.0.0"
 dependencies = [
  "interprocess",
  "pixcap-core",
