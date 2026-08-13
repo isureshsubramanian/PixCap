@@ -11,7 +11,6 @@ Two native apps over one shared Rust core. Nothing leaves your machine.
 [![License](https://img.shields.io/badge/license-Apache--2.0-1a7f37?style=flat-square)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows-5b3df5?style=flat-square)](#installing)
 [![Rust](https://img.shields.io/badge/rust-1.85%2B-d97706?style=flat-square)](https://www.rust-lang.org)
-[![Website](https://img.shields.io/badge/web-pixcap.app-0969da?style=flat-square)](https://pixcap.app)
 
 </div>
 
@@ -69,11 +68,13 @@ covers is dropped before it reaches the clipboard.
 
 ## Installing
 
-Download from **[pixcap.app](https://pixcap.app)**, or grab a build from
-[Releases](https://github.com/isureshsubramanian/PixCap/releases).
+**No binaries are published yet** — build from source with the steps below.
+Signed builds will appear under
+[Releases](https://github.com/isureshsubramanian/PixCap/releases) when they are
+ready.
 
-- **macOS** — 14 or newer, Apple silicon and Intel. Signed and notarised.
-- **Windows** — 10 version 1903 or newer, x64 and ARM64.
+- **macOS** — 14 or newer, Apple silicon and Intel
+- **Windows** — 10 version 1903 or newer, x64 and ARM64
 
 ## How it is put together
 
