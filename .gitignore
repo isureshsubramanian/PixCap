@@ -9,10 +9,6 @@ target/
 node_modules/
 **/node_modules/
 
-# Disable/Ignore GitHub Actions Workflows (Private Repo Safety)
-.github/
-.github/workflows/
-
 # Sample output renders, which the CLI and the examples write in place.
 # Keep this broad, but never let it swallow real assets — anything under
 # images/ or website/assets/ is committed on purpose.
